@@ -1,0 +1,12 @@
+table{
+	height: 100%;
+	width: 100%;
+}
+input{
+	width: 40%;
+	position: relative;
+}
+.add{
+	width: 30%;
+	position: relative;
+}
