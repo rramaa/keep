@@ -10,3 +10,18 @@ input{
 	width: 30%;
 	position: relative;
 }
+.note{
+	border: 1px black solid;
+	padding: 3px;
+	height: auto;
+	width: 45%;
+	margin: 5px;
+	box-shadow: 2px 1px 5px black;
+	display: inline-block;
+}
+.catButton{
+	padding: 0px;
+}
+#categories{
+	margin-top: 20px;
+}
