@@ -1,15 +1,4 @@
-table{
-	height: 100%;
-	width: 100%;
-}
-input{
-	width: 40%;
-	position: relative;
-}
-.add{
-	width: 30%;
-	position: relative;
-}
+
 .note{
 	border: 1px black solid;
 	padding: 3px;
@@ -18,10 +7,16 @@ input{
 	margin: 5px;
 	box-shadow: 2px 1px 5px black;
 	display: inline-block;
-}
-.catButton{
-	padding: 0px;
+	border-radius: 5px;
 }
 #categories{
-	margin-top: 20px;
+	width: 20%;
+	float: left;
+}
+#allNotes{
+	width: 80%;
+	float: left;
+}
+div{
+	display: inline-block;
 }
