@@ -15,7 +15,33 @@ var Application=function(){
 	}
 	this.n=0;
 	this.currentCategory="c0";
+	this.lineHeight=document.getElementById('line').clientHeight;
+	this.escapeHtml=function(text) {
+	  var map = {
+	    '&': '&amp;',
+	    '<': '&lt;',
+	    '>': '&gt;',
+	    '"': '&quot;',
+	    "'": '&#039;'
+	  };
+
+	  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+	}
+	this.adjustLine=function(){
+		var noteHeight=document.getElementById('allNotes').clientHeight;
+		//console.log(noteHeight,this.lineHeight);
+		if(noteHeight<this.lineHeight)
+		{
+			//console.log("no change");
+			document.getElementById('line').style.height=this.lineHeight;
+		}
+		else{
+			console.log(document.getElementById('line').style.height,noteHeight);
+			document.getElementById('line').style.height=noteHeight+"px";
+		}
+	}
 	this.insertNoteInHTML=function(note){
+		var obj=this;
 		var base=document.getElementById('displayNotes');
 		var fragment=document.createDocumentFragment();
 		var div=document.createElement('div');
@@ -23,7 +49,11 @@ var Application=function(){
 		div.setAttribute('id',note.id);
 		fragment.appendChild(div);
 		var contentDiv=document.createElement('div');
-		contentDiv.innerHTML=note.content;
+		contentDiv.innerHTML=note.content.replace(/(?:\r\n|\r|\n)/g, '<br>');
+		contentDiv.addEventListener('dblclick',function(){
+			obj.startEditing(note);
+			//console.log(note);
+		});
 		div.appendChild(contentDiv);
 
 		
@@ -92,6 +122,7 @@ var Application=function(){
 
 		div.setAttribute('style',"background-color:"+colorHash[note.color]);
 		base.appendChild(fragment);
+		this.adjustLine();
 	};
 	this.insertCategoryInHTML=function(catCode){
 		obj=this;
@@ -101,6 +132,7 @@ var Application=function(){
 		fragment.appendChild(div);
 		var button=document.createElement('button');
 		button.setAttribute('class','catButton');
+		button.setAttribute('id','catButton'+catCode);
 		button.innerHTML=this.categories[catCode];
 		(function(catCode){
 			button.addEventListener('click',function(){
@@ -115,6 +147,56 @@ var Application=function(){
 		console.log(child.parentElement);
 		child.parentElement.removeChild(child);
 	};
+	this.updateCatButton=function(){
+		var buttons=document.getElementsByClassName('catButton');
+		for(var key in buttons){
+			if(isNaN(parseInt(key)))
+				break;
+			buttons[key].style.backgroundColor="#E0EBFF";
+			buttons[key].style.border="2px #EDFFED outset";
+		}
+		document.getElementById('catButton'+keep.currentCategory).style.border="2px #EDFFED inset";
+		document.getElementById('catButton'+keep.currentCategory).style.backgroundColor="#BDD4FD";
+	};
+	this.startEditing=function(note){
+		var div=document.getElementById(note.id).childNodes[0];
+		//console.log(div);
+		//div.childNodes[0].addEventListener('dblclick',function(){});
+		var value=div.innerHTML.replace(/<br ?\/?>/g, "\n");
+		//var value=div.innerHTML;
+		console.log(value);
+		div.innerHTML="";
+		var textarea=document.createElement('textarea');
+		textarea.setAttribute('style','font-size:1em;width:95%;height:20px;border:none;margin:8px auto 8px auto;border-bottom:1px #80e5ff solid;background-color:transparent;');
+		textarea.value=value;
+		div.appendChild(textarea);
+		textarea.focus();
+		textarea.select();
+		textarea.addEventListener('blur',function(){
+			console.log("blur");
+			Notes.prototype.editNote.call(note);
+		});
+		textarea.addEventListener('keydown',function(event){
+			var keyCode=event.keyCode?event.keyCode:event.which;
+			if(keyCode==13){
+				if(event.shiftKey)
+				{
+					//console.log("shift");
+					event.stopPropagation();
+				}
+				else{
+					console.log('enter');
+					textarea.blur();
+					event.preventDefault();
+				}
+			}
+			else if(keyCode==27){
+				textarea.value=value;
+				textarea.blur();
+			}
+		});
+		//console.log(div);
+	}
 };
 Application.prototype.populateCategories=function(){
 	var obj=this;
@@ -157,7 +239,7 @@ Application.prototype.saveCategories=function(){
 //needs to be updated
 Application.prototype.saveNotes=function(){
 	var notesToSave=JSON.stringify(this.notes);
-	console.log(notesToSave);
+	//console.log(notesToSave);
 	localStorage.setItem("notes",notesToSave);
 };
 Application.prototype.updateNoCat=function(){
@@ -170,12 +252,15 @@ Application.prototype.updateNoCat=function(){
 Application.prototype.viewCategory=function(key){
 	keep.currentCategory=key;
 	this.populateNotes();
+	this.updateCatButton();
 }
 var keep=new Application();
 keep.populateCategories();
 keep.populateNotes(keep.currentCategory);
 bindReturnHandler('content','newNote');
-bindReturnHandler('category','newCategory')
+bindReturnHandler('category','newCategory');
+keep.updateCatButton();
+keep.adjustLine();
 
 //NOTES Class
 var Notes=function(content){
@@ -200,6 +285,7 @@ Notes.prototype.deleteNote=function(){
 			keep.saveNotes();
 		}
 	}
+	keep.adjustLine();
 	//keep.restructureNotes();
 };
 Notes.prototype.changeColor=function(){
@@ -242,6 +328,38 @@ Notes.prototype.changeCategory=function(catCode){
 	//if(document.getElementById('catChange'+note.id))
 	//	document.getElementById('catChange'+note.id).selectedIndex=0;
 };
+Notes.prototype.editNote=function(){
+	var note=this;
+	var div=document.getElementById(note.id);
+	var value=div.childNodes[0].childNodes[0].value;
+	if(value=="")
+	{
+		Notes.prototype.deleteNote.call(note);
+	}
+	else{
+		value=keep.escapeHtml(value.trim()).replace(/\n/g, "<br />");
+		if(div.childNodes[0])
+			div.removeChild(div.childNodes[0]);
+		var contentDiv=document.createElement('div');
+		contentDiv.innerHTML=value;
+		contentDiv.addEventListener('dblclick',function(){
+			obj.startEditing(note);
+			//console.log(note);
+		});
+		div.insertBefore(contentDiv,div.firstChild);
+		for(var key in keep.notes.data){
+			if(keep.notes.data[key])
+			{
+				if(keep.notes.data[key].id==note.id)
+				{
+					keep.notes.data[key].content=value;
+					keep.saveNotes();
+				}
+			}
+		}
+	}
+	console.log(value);
+};
 
 document.getElementById('newCategory').addEventListener('click',newCategory);
 document.getElementById('newNote').addEventListener('click',newNote);
@@ -268,6 +386,7 @@ function newCategory(){
 			option.innerHTML=cat;
 			dropdowns[key].appendChild(option);
 		}
+		keep.updateCatButton();
 	}
 	document.getElementById("category").value="";
 }
@@ -276,13 +395,25 @@ function bindReturnHandler(inputId,buttonId){
 	var button=document.getElementById(buttonId);
 	element.addEventListener('keydown',function(event){
 		var keyCode=event.keyCode?event.keyCode:event.which;
-		if(keyCode==13)
-			button.click();
+		if(keyCode==13){
 			//event.preventDefault();
+			if(event.shiftKey)
+			{
+				//console.log("shift");
+				event.stopPropagation();
+			}
+			else{
+				event.preventDefault();
+				button.click();
+				document.getElementById('content').value="";
+			}
+		}
 	});
 }
 function newNote(){
-	var content=document.getElementById('content').value;
+	var content=document.getElementById('content').value.trim();
+	content=keep.escapeHtml(content);
+	console.log(content);
 	if(content!=""){
 		var tempNote=new Notes(content);
 		var tempJSONNote=tempNote;
@@ -290,7 +421,7 @@ function newNote(){
 		keep.notes.count++;
 		keep.notes.last++;
 		//keep.noOfNotes++;
-		adjustLine();
+		//keep.adjustLine();
 		keep.saveNotes();
 		if(keep.currentCategory==tempNote.category || keep.currentCategory=='c0')
 			keep.insertNoteInHTML(tempNote);

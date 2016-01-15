@@ -29,23 +29,45 @@
 	background-color: red;
 	border-left: 1px black solid;
 }
+.catButton{
+	//background: #E4EEFF;
+	border-radius: 10px;
+}
+.add{
+	width: 75px;
+	height: 25px;
+	background-color: rgb(255, 243, 243);
+	border-radius: 10px;
+}
+.add:focus{
+	outline-width: 0;
+}
+#newNote{
+	position: absolute;
+}
 span{
 	text-decoration: underline;
 }
 button{
 	margin: 2px;
+	cursor: pointer;
+}
+button:focus{
+	outline-width: 0;
+	border: 2px #B3B3B3 inset;
 }
 body{
 	font-family: Verdana;
 }
-input[type='text']{
+input[type='text'],textarea{
 	width:50%;
 	height: 50%;
 	border:none;
+	font-size: 0.75em;
 	margin: 8px auto 8px auto;
 	border-bottom: 1px #80e5ff solid;
 }
-input[type='text']:focus{
+input[type='text']:focus,textarea:focus{
 	outline-width: 0;
 	border-bottom: 2px blue solid;
 }
@@ -61,9 +83,22 @@ input[type='text']:focus{
 	width:30%;
 	float: left;
 	margin: auto auto auto 2%;
+    background-color: orangered;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 10px;
+    height: 18px;
+    line-height: 10px;
+    border: 2px #B3B3B3 outset;
+}
+.note div:nth-child(2) div button:focus{
+	border: 2px #B3B3B3 inset;
 }
 .note div:nth-child(2) div select{
 	width:30%;
 	float: left;
 	margin: auto auto auto 2%;
+}
+.note div:nth-child(2) div select:focus{
+	outline-width: 0;
 }
