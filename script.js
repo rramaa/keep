@@ -22,17 +22,13 @@ var Application=function(){
 		div.setAttribute('class','note');
 		div.setAttribute('id',note.id);
 		fragment.appendChild(div);
-		var table=document.createElement('table');
-		var row=document.createElement('tr');
-		var data=document.createElement('td');
-		data.setAttribute('colspan','3');
-		data.innerHTML=note.content;
-		row.appendChild(data);
-		table.appendChild(row);
+		var contentDiv=document.createElement('div');
+		contentDiv.innerHTML=note.content;
+		div.appendChild(contentDiv);
 
 		
-		var row=document.createElement('tr');
-		var data=document.createElement('td');
+		var butDiv=document.createElement('div');
+		var deleteDiv=document.createElement('div');
 		var button=document.createElement('button');
 		button.innerHTML='Delete';
 		function temp1(note){
@@ -46,10 +42,10 @@ var Application=function(){
 			});
 		}
 		temp1(note);
-		data.appendChild(button);
-		row.appendChild(data);
+		deleteDiv.appendChild(button);
+		butDiv.appendChild(deleteDiv);
 
-		var data=document.createElement('td');
+		var colorDiv=document.createElement('div');
 		var dropdown=document.createElement('select');
 		dropdown.setAttribute('id','colorChange'+note.id);
 		for( var colors in colorHash){
@@ -64,11 +60,13 @@ var Application=function(){
 				Notes.prototype.changeColor.call(note);
 			});
 		})(note);
-		data.appendChild(dropdown);
-		row.appendChild(data);
-		var data=document.createElement('td');
+		colorDiv.appendChild(dropdown);
+		butDiv.appendChild(colorDiv);
+
+		var catDiv=document.createElement('div');
 		var dropdown=document.createElement('select');
 		dropdown.setAttribute('id','catChange'+note.id);
+		dropdown.setAttribute('class','catChange');
 		var option=document.createElement('option');
 		option.setAttribute('id',0);
 		option.innerHTML='Select Categories';
@@ -88,11 +86,10 @@ var Application=function(){
 		})(note);
 		if(note.category!=0)
 			dropdown.selectedIndex=note.category.substring(1,2);
-		data.appendChild(dropdown);
-		row.appendChild(data);
+		catDiv.appendChild(dropdown);
+		butDiv.appendChild(catDiv);
+		div.appendChild(butDiv);
 
-		table.appendChild(row);
-		div.appendChild(table);
 		div.setAttribute('style',"background-color:"+colorHash[note.color]);
 		base.appendChild(fragment);
 	};
@@ -177,12 +174,14 @@ Application.prototype.viewCategory=function(key){
 var keep=new Application();
 keep.populateCategories();
 keep.populateNotes(keep.currentCategory);
+bindReturnHandler('content','newNote');
+bindReturnHandler('category','newCategory')
 
 //NOTES Class
 var Notes=function(content){
 	this.id='n'+keep.notes.last;
 	this.content=content;
-	this.category="c0";
+	this.category=keep.currentCategory;
 	this.color=Math.floor((Math.random()*8))+1;
 };
 Notes.prototype.deleteNote=function(){
@@ -260,12 +259,28 @@ function newCategory(){
 		keep.saveCategories();
 		parent=document.getElementById('categories');
 		keep.insertCategoryInHTML("c"+keep.n);
-		keep.populateNotes();
+		var dropdowns=document.getElementsByClassName('catChange');
+		for(var key in dropdowns){
+			if(isNaN(parseInt(key)))
+				break;
+			var option=document.createElement('option');
+			option.setAttribute('id',"c"+keep.n);
+			option.innerHTML=cat;
+			dropdowns[key].appendChild(option);
+		}
 	}
 	document.getElementById("category").value="";
 }
-
-
+function bindReturnHandler(inputId,buttonId){
+	var element=document.getElementById(inputId);
+	var button=document.getElementById(buttonId);
+	element.addEventListener('keydown',function(event){
+		var keyCode=event.keyCode?event.keyCode:event.which;
+		if(keyCode==13)
+			button.click();
+			//event.preventDefault();
+	});
+}
 function newNote(){
 	var content=document.getElementById('content').value;
 	if(content!=""){
@@ -275,6 +290,7 @@ function newNote(){
 		keep.notes.count++;
 		keep.notes.last++;
 		//keep.noOfNotes++;
+		adjustLine();
 		keep.saveNotes();
 		if(keep.currentCategory==tempNote.category || keep.currentCategory=='c0')
 			keep.insertNoteInHTML(tempNote);

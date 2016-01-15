@@ -11,12 +11,59 @@
 }
 #categories{
 	width: 20%;
-	float: left;
+	position: absolute;
+	padding: 5px;
+	//border-right: 1px black solid;
 }
 #allNotes{
-	width: 80%;
-	float: left;
+	position: absolute;
+	width :75%;
+	margin-left: 22%;
+	padding: 5px;
 }
-div{
-	display: inline-block;
+#line{
+	position: absolute;
+	margin-left: 21%;
+	width: 0px;
+	height: 98%;
+	background-color: red;
+	border-left: 1px black solid;
+}
+span{
+	text-decoration: underline;
+}
+button{
+	margin: 2px;
+}
+body{
+	font-family: Verdana;
+}
+input[type='text']{
+	width:50%;
+	height: 50%;
+	border:none;
+	margin: 8px auto 8px auto;
+	border-bottom: 1px #80e5ff solid;
+}
+input[type='text']:focus{
+	outline-width: 0;
+	border-bottom: 2px blue solid;
+}
+#displayCategories div button{
+	height: 15%;
+	width: 80%;
+	font-size: 0.80em;
+}
+.note div:nth-child(1){
+	margin: auto auto 2% 2%;
+}
+.note div:nth-child(2) div button{
+	width:30%;
+	float: left;
+	margin: auto auto auto 2%;
+}
+.note div:nth-child(2) div select{
+	width:30%;
+	float: left;
+	margin: auto auto auto 2%;
 }
