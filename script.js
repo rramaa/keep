@@ -2,16 +2,16 @@
 var colorHash=new Array("Select Color","#e5e5ff","#ffe5f6","#c6ecc6","#ffffb3","#ffcccc","#ebccff","#fff2cc","#ccd9ff");
 var colorName=new Array("Select Color","Lavender","Lavender Blush","Green","Yellow","Cosmos","Blue Chalk","Oasis","Hawkes Blue");
 var Application=function(){
-	this.categories=JSON.parse(localStorage.getItem("categories"));
+	this.categories=JSON.parse(localStorage.getItem("categories2"));
 	if(!this.categories){
-		localStorage.setItem("categories",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}');
-		this.categories=JSON.parse(localStorage.getItem("categories"));
+		localStorage.setItem("categories2",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}');
+		this.categories=JSON.parse(localStorage.getItem("categories2"));
 	}
-	this.notes=JSON.parse(localStorage.getItem("notes"));
+	this.notes=JSON.parse(localStorage.getItem("notes2"));
 	if(!this.notes)
 	{
-		localStorage.setItem("notes",'{"count":0,"data":[],"last":0}');
-		this.notes=JSON.parse(localStorage.getItem("notes"));
+		localStorage.setItem("notes2",'{"count":0,"data":[],"last":0}');
+		this.notes=JSON.parse(localStorage.getItem("notes2"));
 	}
 	this.n=0;
 	this.currentCategory="c0";
@@ -75,6 +75,18 @@ var Application=function(){
 		deleteDiv.appendChild(button);
 		butDiv.appendChild(deleteDiv);
 
+		var checkboxDiv=document.createElement('div');
+		var button=document.createElement('button');
+		button.innerHTML="Checkbox";
+		function temp2(note){
+			button.addEventListener('click',function(){
+				Notes.prototype.invertCheckBoxStatus.call(note);
+			})
+		}
+		temp2(note);
+		checkboxDiv.appendChild(button);
+		butDiv.appendChild(checkboxDiv);
+
 		var colorDiv=document.createElement('div');
 		var dropdown=document.createElement('select');
 		dropdown.setAttribute('id','colorChange'+note.id);
@@ -123,6 +135,9 @@ var Application=function(){
 		div.setAttribute('style',"background-color:"+colorHash[note.color]);
 		base.appendChild(fragment);
 		this.adjustLine();
+		if(note.checkboxStatus){
+			Notes.prototype.addCheckboxes.call(note);
+		}
 	};
 	this.insertCategoryInHTML=function(catCode){
 		obj=this;
@@ -168,7 +183,7 @@ var Application=function(){
 		div.innerHTML="";
 		var textarea=document.createElement('textarea');
 		textarea.setAttribute('style','font-size:1em;width:95%;height:20px;border:none;margin:8px auto 8px auto;border-bottom:1px #80e5ff solid;background-color:transparent;');
-		textarea.value=value;
+		textarea.value=note.content;
 		div.appendChild(textarea);
 		textarea.focus();
 		textarea.select();
@@ -191,7 +206,7 @@ var Application=function(){
 				}
 			}
 			else if(keyCode==27){
-				textarea.value=value;
+				textarea.value=note.content;
 				textarea.blur();
 			}
 		});
@@ -234,13 +249,13 @@ Application.prototype.populateNotes=function(){
 };
 Application.prototype.saveCategories=function(){
 	var categoriesToSave=JSON.stringify(this.categories);
-	localStorage.setItem("categories",categoriesToSave);
+	localStorage.setItem("categories2",categoriesToSave);
 };
 //needs to be updated
 Application.prototype.saveNotes=function(){
 	var notesToSave=JSON.stringify(this.notes);
 	//console.log(notesToSave);
-	localStorage.setItem("notes",notesToSave);
+	localStorage.setItem("notes2",notesToSave);
 };
 Application.prototype.updateNoCat=function(){
 	var categories=this.categories;
@@ -254,13 +269,6 @@ Application.prototype.viewCategory=function(key){
 	this.populateNotes();
 	this.updateCatButton();
 }
-var keep=new Application();
-keep.populateCategories();
-keep.populateNotes(keep.currentCategory);
-bindReturnHandler('content','newNote');
-bindReturnHandler('category','newCategory');
-keep.updateCatButton();
-keep.adjustLine();
 
 //NOTES Class
 var Notes=function(content){
@@ -268,6 +276,8 @@ var Notes=function(content){
 	this.content=content;
 	this.category=keep.currentCategory;
 	this.color=Math.floor((Math.random()*8))+1;
+	this.checkboxStatus=false;
+	this.checkboxData=[];
 };
 Notes.prototype.deleteNote=function(){
 	var toBeDeleted=this;
@@ -330,14 +340,20 @@ Notes.prototype.changeCategory=function(catCode){
 };
 Notes.prototype.editNote=function(){
 	var note=this;
+	var flag=false;
 	var div=document.getElementById(note.id);
 	var value=div.childNodes[0].childNodes[0].value;
+	if(note.checkboxStatus==true){
+		Notes.prototype.invertCheckBoxStatus.call(note);
+		flag=true;
+	}
+	//console.log(div.childNodes[0].childNodes[0]);
 	if(value=="")
 	{
 		Notes.prototype.deleteNote.call(note);
 	}
 	else{
-		value=keep.escapeHtml(value.trim()).replace(/\n/g, "<br />");
+		value=keep.escapeHtml(value.trim()).replace(/\n/g, "<br>");
 		if(div.childNodes[0])
 			div.removeChild(div.childNodes[0]);
 		var contentDiv=document.createElement('div');
@@ -346,6 +362,7 @@ Notes.prototype.editNote=function(){
 			obj.startEditing(note);
 			//console.log(note);
 		});
+		value=value.replace(/<br>/g,"\n");
 		div.insertBefore(contentDiv,div.firstChild);
 		for(var key in keep.notes.data){
 			if(keep.notes.data[key])
@@ -358,12 +375,123 @@ Notes.prototype.editNote=function(){
 			}
 		}
 	}
+	console.log(flag);
+	if(flag){
+		Notes.prototype.invertCheckBoxStatus.call(note);
+	}
 	console.log(value);
 };
+Notes.prototype.invertCheckBoxStatus=function(){
+	var note=this;
+	if(note.checkboxStatus)
+	{
+		//console.log(newContent);
+		//note.content=newContent.substring(0,newContent.length-1);
+		note.checkboxStatus=false;
+		Notes.prototype.removeCheckboxes.call(note);
+		//document.getElementById(note.id).childNodes[0].innerHTML=note.content.replace(/(?:\r\n|\r|\n)/g, '<br>');;
+		keep.saveNotes();
+		console.log("changed to false");
+	}
+	else{
+		var text=note.content.split('\n');
+		//var newContent=document.createDocumentFragment();
+		//var newContent="";
+		var lengthOfData=0,lengthOfStoredData=0;
+		for(var key in text){
+			//newContent+="<input type=checkbox id="+key+" onclick=function("+key+"){console.log("+key+");}>"+text[key]+"\n";
+			//var input=document.createElement('input');
+			//input.type='checkbox';
+			//newContent.appendChild(input);
+			//newContent.appendChild(text[key]+"\n");
+			if(note.checkboxData[key]!=false && note.checkboxData[key]!=true){
+				note.checkboxData[key]=false;
+			}
+			lengthOfData++;
+		}
+		lengthOfStoredData=note.checkboxData.length;
+		if(lengthOfData<lengthOfStoredData){
+			note.checkboxData.splice(lengthOfData);
+		}
+		lengthOfStoredData=note.checkboxData.length;
+		console.log(lengthOfData,lengthOfStoredData);
+		Notes.prototype.addCheckboxes.call(note);
+		//Notes.prototype.addEventsToCheckbox.call(note);
+		//newContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
+		//note.content=newContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
+		//console.log(note.content);
+		note.checkboxStatus=true;
+		//document.getElementById(note.id).childNodes[0].innerHTML=note.content;
+		keep.saveNotes();
+		//console.log(note);
+	}
+};
+Notes.prototype.addCheckboxes=function(){
+	var note=this;
+	var div=document.getElementById(note.id).childNodes[0];
+	var content=note.content.split("\n");
+	//console.log(div);
+	var newContentTrue="",newContentFalse="";
+	for(var key in content){
+		if(note.checkboxData[key])
+			newContentTrue+="<input type=checkbox checked id="+key+"><span class=completed>"+content[key]+"</span><br>";
+		else
+			newContentFalse+="<input type=checkbox id="+key+">"+content[key]+"<br>";
+	}
+	if(newContentTrue!="")
+		div.innerHTML=newContentFalse+"<span>Completed Tasks</span><br>"+newContentTrue;
+	else
+		div.innerHTML=newContentFalse+newContentTrue;
+	div.addEventListener('click',function(event){
+		//console.log(event.target,note);
+		if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
+			note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
+			updateStructure(note);
+			keep.saveNotes();
+		}
+	});
+	//console.log(div.innerHTML.split('<br>'));
+};
 
+updateStructure=function(note){
+	var div=document.getElementById(note.id).childNodes[0];
+	var content=note.content.split("\n");
+	var newContentTrue="",newContentFalse="";
+	for(var key in content){
+		if(note.checkboxData[key])
+			newContentTrue+="<input type=checkbox checked id="+key+"><span class=completed>"+content[key]+"</span><br>";
+		else
+			newContentFalse+="<input type=checkbox id="+key+">"+content[key]+"<br>";
+	}
+	if(newContentTrue!="")
+		div.innerHTML=newContentFalse+"<span>Completed Tasks</span><br>"+newContentTrue;
+	else
+		div.innerHTML=newContentFalse+newContentTrue;
+}
+
+Notes.prototype.removeCheckboxes=function(){
+	var note=this;
+	var div=document.getElementById(note.id).childNodes[0];
+	div.innerHTML=note.content.replace(/(\n)/g,"<br>");
+	console.log(div);
+	//div.removeEventListener('click',testing);
+};
+
+Notes.prototype.updateCheckboxStatus=function(e){
+	console.log(e);
+}
+function testing(){
+	console.log("Removed");
+}
 document.getElementById('newCategory').addEventListener('click',newCategory);
 document.getElementById('newNote').addEventListener('click',newNote);
-
+var keep=new Application();
+keep.populateCategories();
+keep.populateNotes(keep.currentCategory);
+bindReturnHandler('content','newNote');
+bindReturnHandler('category','newCategory');
+keep.updateCatButton();
+keep.adjustLine();
 
 function newCategory(){
 	var cat=document.getElementById("category").value;
@@ -417,6 +545,7 @@ function newNote(){
 	if(content!=""){
 		var tempNote=new Notes(content);
 		var tempJSONNote=tempNote;
+		//tempJSONNote.content=tempJSONNote.content.replace(/(?:\r\n|\r|\n)/g, '<br>');
 		keep.notes.data.push(tempJSONNote);
 		keep.notes.count++;
 		keep.notes.last++;

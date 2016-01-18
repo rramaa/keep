@@ -80,7 +80,7 @@ input[type='text']:focus,textarea:focus{
 	margin: auto auto 2% 2%;
 }
 .note div:nth-child(2) div button{
-	width:30%;
+	width:20%;
 	float: left;
 	margin: auto auto auto 2%;
     background-color: orangered;
@@ -95,10 +95,17 @@ input[type='text']:focus,textarea:focus{
 	border: 2px #B3B3B3 inset;
 }
 .note div:nth-child(2) div select{
-	width:30%;
+	width:20%;
 	float: left;
 	margin: auto auto auto 2%;
 }
 .note div:nth-child(2) div select:focus{
 	outline-width: 0;
+}
+.note div span{
+	text-decoration: underline;
+}
+.completed{
+	text-decoration: none;
+	text-decoration: line-through !important;
 }
