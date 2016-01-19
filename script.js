@@ -14,6 +14,14 @@ Colors.push(new Color("Cosmos","#ffcccc"));
 Colors.push(new Color("Blue Chalk","#ebccff"));
 Colors.push(new Color("Oasis","#fff2cc"));
 Colors.push(new Color("Hawkes Blue","#ccd9ff"));
+//Check for mobile
+var isMobile=( navigator.userAgent.match(/Android/i)
+		 || navigator.userAgent.match(/webOS/i)
+		 || navigator.userAgent.match(/iPhone/i)
+		 || navigator.userAgent.match(/iPad/i)
+		 || navigator.userAgent.match(/iPod/i)
+		 || navigator.userAgent.match(/BlackBerry/i)
+		 || navigator.userAgent.match(/Windows Phone/i))?true:false;
 //
 var Application=function(){
 	this.categories=JSON.parse(localStorage.getItem("categories"));
@@ -26,7 +34,6 @@ var Application=function(){
 		}
 		this.categories=new defaultCategories();
 		localStorage.setItem("categories",JSON.stringify(this.categories));
-		//this.categories=JSON.parse(localStorage.getItem("categories"));
 	}
 	this.notes=JSON.parse(localStorage.getItem("notes"));
 	if(!this.notes)
@@ -38,11 +45,9 @@ var Application=function(){
 		}
 		this.notes=new defaultNotes();
 		localStorage.setItem("notes",JSON.stringify(this.notes));
-		//this.notes=JSON.parse(localStorage.getItem("notes"));
 	}
 	this.n=0;//number of categories
 	this.currentCategory="c0";
-	// this.lineHeight=document.getElementById('line').clientHeight;
 	this.escapeHtml=function(text) {
 	  var map = {
 	    '&': '&amp;',
@@ -51,47 +56,34 @@ var Application=function(){
 	    '"': '&quot;',
 	    "'": '&#039;'
 	  };
-
 	  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 	}
 	this.unescapeHtml=function(text) {
 	  return text.replace(/(&lt;)/g,'<').replace(/(&gt;)/g,'>').replace(/(&amp;)/g,'&').replace(/(&quot;)/g,'\"').replace(/(&#039;)/g,'\'');
-	  //return text.replace(/(&lt;,&gt;)/g, function(m) { return map[m]; });
 	}
-	// this.adjustLine=function(){
-	// 	var noteHeight=document.getElementById('allNotes').clientHeight;
-	// 	//console.log(noteHeight,this.lineHeight);
-	// 	if(noteHeight<this.lineHeight)
-	// 	{
-	// 		//console.log("no change");
-	// 		document.getElementById('line').style.height=this.lineHeight;
-	// 	}
-	// 	else{
-	// 		console.log(document.getElementById('line').style.height,noteHeight);
-	// 		document.getElementById('line').style.height=noteHeight+"px";
-	// 	}
-	// }
+		var createHTMLNode=function(tag,id,Class,innerContent,bgColor){
+			var element=document.createElement(tag);
+			if(id)
+				element.setAttribute('id',id);
+			if(Class)
+				element.setAttribute('class',Class);
+			if(innerContent)
+				element.innerHTML=innerContent;
+			if(bgColor)
+				element.style.backgroundColor=bgColor;
+			return element;
+		}
 	this.insertNoteInHTML=function(note){
 		var obj=this;
 		var base=document.getElementById('displayNotes');
 		var fragment=document.createDocumentFragment();
-		var div=document.createElement('div');
-		div.setAttribute('class','note');
-		div.setAttribute('id',note.id);
+		var div=createHTMLNode('div',note.id,'note',null,Colors[note.color].hash);
 		fragment.appendChild(div);
-		var contentDiv=document.createElement('div');
-		contentDiv.innerHTML=note.content.replace(/(?:\r\n|\r|\n)/g, '<br>');
+		var contentDiv=createHTMLNode('div',null,null,note.content.replace(/(?:\r\n|\r|\n)/g, '<br>'));
 		contentDiv.addEventListener('dblclick',function(){
 			obj.startEditing(note);
-			//console.log(note);
 		});
-		if( navigator.userAgent.match(/Android/i)
-		 || navigator.userAgent.match(/webOS/i)
-		 || navigator.userAgent.match(/iPhone/i)
-		 || navigator.userAgent.match(/iPad/i)
-		 || navigator.userAgent.match(/iPod/i)
-		 || navigator.userAgent.match(/BlackBerry/i)
-		 || navigator.userAgent.match(/Windows Phone/i)){
+		if(isMobile){
     		var pressTimer;
 			contentDiv.addEventListener('mousedown',function(){
 				pressTimer=window.setTimeout(function(){
@@ -105,18 +97,12 @@ var Application=function(){
   		}
 		div.appendChild(contentDiv);
 
-		
-		var butDiv=document.createElement('div');
-		var deleteDiv=document.createElement('div');
-		var button=document.createElement('button');
-		button.innerHTML='Delete';
+
+		var butDiv=createHTMLNode('div');
+		var deleteDiv=createHTMLNode('div');
+		var button=createHTMLNode('button','delete',null,'Delete');
 		function temp1(note){
 			button.addEventListener('click',function(){
-				//note=Object.create(Notes,note);
-				//console.log(note);
-				//note.deleteNote();
-				//debugger;
-				//this.deleteNote();
 				Notes.prototype.deleteNote.call(note);
 			});
 		}
@@ -124,9 +110,8 @@ var Application=function(){
 		deleteDiv.appendChild(button);
 		butDiv.appendChild(deleteDiv);
 
-		var checkboxDiv=document.createElement('div');
-		var button=document.createElement('button');
-		button.innerHTML="Checkbox";
+		var checkboxDiv=createHTMLNode('div');
+		var button=createHTMLNode('button','checkbox',null,'Checkbox');
 		function temp2(note){
 			button.addEventListener('click',function(){
 				Notes.prototype.invertCheckBoxStatus.call(note);
@@ -136,14 +121,10 @@ var Application=function(){
 		checkboxDiv.appendChild(button);
 		butDiv.appendChild(checkboxDiv);
 
-		var colorDiv=document.createElement('div');
-		var dropdown=document.createElement('select');
-		dropdown.setAttribute('id','colorChange'+note.id);
+		var colorDiv=createHTMLNode('div');
+		var dropdown=createHTMLNode('select','colorChange'+note.id);
 		for( var key in Colors){
-			var option=document.createElement('option');
-			option.setAttribute('id',key);
-			option.style.backgroundColor=Colors[key].hash;
-			option.innerHTML=Colors[key].name;
+			var option=createHTMLNode('option',key,null,Colors[key].name,Colors[key].hash);
 			dropdown.appendChild(option);
 		}
 		(function(note){
@@ -153,20 +134,14 @@ var Application=function(){
 		})(note);
 		colorDiv.appendChild(dropdown);
 		butDiv.appendChild(colorDiv);
-
-		var catDiv=document.createElement('div');
-		var dropdown=document.createElement('select');
-		dropdown.setAttribute('id','catChange'+note.id);
-		dropdown.setAttribute('class','catChange');
-		var option=document.createElement('option');
-		option.setAttribute('id',0);
-		option.innerHTML='Select Categories';
+		
+		var catDiv=createHTMLNode('div');
+		var dropdown=createHTMLNode('select','catChange'+note.id,'catChange');
+		var option=createHTMLNode('option',0,null,'Select Categories');
 		dropdown.appendChild(option);
 		for(var cats in this.categories){
 			if(cats!="c0"){
-				var option=document.createElement('option');
-				option.setAttribute('id',cats);
-				option.innerHTML=this.categories[cats];
+				var option=createHTMLNode('option',cats,null,this.categories[cats]);
 				dropdown.appendChild(option);
 			}
 		}
@@ -180,10 +155,7 @@ var Application=function(){
 		catDiv.appendChild(dropdown);
 		butDiv.appendChild(catDiv);
 		div.appendChild(butDiv);
-
-		div.setAttribute('style',"background-color:"+Colors[note.color].hash);
 		base.appendChild(fragment);
-		//this.adjustLine();
 		if(note.checkboxStatus){
 			Notes.prototype.addCheckboxes.call(note);
 		}
@@ -192,12 +164,9 @@ var Application=function(){
 		obj=this;
 		var fragment=document.createDocumentFragment();
 		var base=document.getElementById('displayCategories');
-		var div=document.createElement('div');
+		var div=createHTMLNode('div');
 		fragment.appendChild(div);
-		var button=document.createElement('button');
-		button.setAttribute('class','catButton');
-		button.setAttribute('id','catButton'+catCode);
-		button.innerHTML=this.categories[catCode];
+		var button=createHTMLNode('button','catButton'+catCode,'catButton',this.categories[catCode]);
 		(function(catCode){
 			button.addEventListener('click',function(){
 				obj.viewCategory(catCode);
@@ -224,12 +193,6 @@ var Application=function(){
 	};
 	this.startEditing=function(note){
 		var div=document.getElementById(note.id).childNodes[0];
-		//console.log(div);
-		//div.childNodes[0].addEventListener('dblclick',function(){});
-		//var value=div.innerHTML.replace(/<br ?\/?>/g, "\n");
-		//value=keep.unescapeHtml(value);
-		//var value=div.innerHTML;
-		//console.log(value);
 		div.innerHTML="";
 		var textarea=document.createElement('textarea');
 		textarea.setAttribute('style','font-size:1em;width:95%;height:20px;border:none;margin:8px auto 8px auto;border-bottom:1px #80e5ff solid;background-color:transparent;');
@@ -244,16 +207,9 @@ var Application=function(){
 		});
 		textarea.addEventListener('keydown',function(event){
 			var keyCode=event.keyCode?event.keyCode:event.which;
-			if(keyCode==13 && !(navigator.userAgent.match(/Android/i)
-		 || navigator.userAgent.match(/webOS/i)
-		 || navigator.userAgent.match(/iPhone/i)
-		 || navigator.userAgent.match(/iPad/i)
-		 || navigator.userAgent.match(/iPod/i)
-		 || navigator.userAgent.match(/BlackBerry/i)
-		 || navigator.userAgent.match(/Windows Phone/i))){
+			if(keyCode==13 && !(isMobile)){
 				if(event.shiftKey)
 				{
-					//console.log("shift");
 					event.stopPropagation();
 				}
 				else{
@@ -267,13 +223,11 @@ var Application=function(){
 				textarea.blur();
 			}
 		});
-		//console.log(div);
 	}
 };
 Application.prototype.populateCategories=function(){
 	var obj=this;
 	var categories=this.categories;
-	//console.log(categories);
 	var base=document.getElementById('displayCategories');
 	base.innerHTML="";
 	for(var key in categories){
@@ -281,13 +235,9 @@ Application.prototype.populateCategories=function(){
 	}
 	this.updateNoCat();
 };
-//needs to be updated
 Application.prototype.populateNotes=function(){
 	if(keep.notes.count>0){
 		var base=document.getElementById('displayNotes');
-		/*while(base.childNodes[7]){
-			base.removeChild(base.childNodes[7]);
-		}*/
 		base.innerHTML="";
 		for(var key in this.notes.data)
 		{
@@ -302,16 +252,13 @@ Application.prototype.populateNotes=function(){
 	}
 	else
 		console.log("no note found");
-	//console.log(keep.notes);
 };
 Application.prototype.saveCategories=function(){
 	var categoriesToSave=JSON.stringify(this.categories);
 	localStorage.setItem("categories",categoriesToSave);
 };
-//needs to be updated
 Application.prototype.saveNotes=function(){
 	var notesToSave=JSON.stringify(this.notes);
-	//console.log(notesToSave);
 	localStorage.setItem("notes",notesToSave);
 };
 Application.prototype.updateNoCat=function(){
@@ -326,7 +273,6 @@ Application.prototype.viewCategory=function(key){
 	this.populateNotes();
 	this.updateCatButton();
 }
-
 //NOTES Class
 var Notes=function(content){
 	this.id='n'+keep.notes.last;
@@ -340,23 +286,17 @@ Notes.prototype.deleteNote=function(){
 	var toBeDeleted=this;
 	for(var key in keep.notes.data)
 	{
-		//console.log(JSON.parse(keep.notes.data[key]),toBeDeleted);
 		var note=keep.notes.data[key];
-		//console.log(toBeDeleted);
 		if(note && note.id==toBeDeleted.id)
 		{
-			//console.log(note.id);
 			delete keep.notes.data[key];
 			keep.removeNodeFromHTML(note.id);
 			keep.notes.count--;
 			keep.saveNotes();
 		}
 	}
-	//keep.adjustLine();
-	//keep.restructureNotes();
 };
 Notes.prototype.changeColor=function(){
-	//console.log(this);
 	var toBeChanged=this;
 	var colorCode=document.getElementById('colorChange'+toBeChanged.id).selectedIndex;
 	console.log(colorCode);
@@ -392,20 +332,16 @@ Notes.prototype.changeCategory=function(catCode){
 			}
 		}
 	}
-	//if(document.getElementById('catChange'+note.id))
-	//	document.getElementById('catChange'+note.id).selectedIndex=0;
 };
 Notes.prototype.editNote=function(){
 	var note=this;
 	var flag=false;
 	var div=document.getElementById(note.id);
 	var value=div.childNodes[0].childNodes[0].value;
-	//value=keep.unescapeHtml(value);
 	if(note.checkboxStatus==true){
 		Notes.prototype.invertCheckBoxStatus.call(note);
 		flag=true;
 	}
-	//console.log(div.childNodes[0].childNodes[0]);
 	if(value=="")
 	{
 		Notes.prototype.deleteNote.call(note);
@@ -418,15 +354,8 @@ Notes.prototype.editNote=function(){
 		contentDiv.innerHTML=value;
 		contentDiv.addEventListener('dblclick',function(){
 			obj.startEditing(note);
-			//console.log(note);
 		});
-		if( navigator.userAgent.match(/Android/i)
-		 || navigator.userAgent.match(/webOS/i)
-		 || navigator.userAgent.match(/iPhone/i)
-		 || navigator.userAgent.match(/iPad/i)
-		 || navigator.userAgent.match(/iPod/i)
-		 || navigator.userAgent.match(/BlackBerry/i)
-		 || navigator.userAgent.match(/Windows Phone/i)){
+		if(isMobile){
     		var pressTimer;
 			contentDiv.addEventListener('mousedown',function(){
 				pressTimer=window.setTimeout(function(){
@@ -461,25 +390,15 @@ Notes.prototype.invertCheckBoxStatus=function(){
 	var note=this;
 	if(note.checkboxStatus)
 	{
-		//console.log(newContent);
-		//note.content=newContent.substring(0,newContent.length-1);
 		note.checkboxStatus=false;
 		Notes.prototype.removeCheckboxes.call(note);
-		//document.getElementById(note.id).childNodes[0].innerHTML=note.content.replace(/(?:\r\n|\r|\n)/g, '<br>');;
 		keep.saveNotes();
 		console.log("changed to false");
 	}
 	else{
 		var text=note.content.split('\n');
-		//var newContent=document.createDocumentFragment();
-		//var newContent="";
 		var lengthOfData=0,lengthOfStoredData=0;
 		for(var key in text){
-			//newContent+="<input type=checkbox id="+key+" onclick=function("+key+"){console.log("+key+");}>"+text[key]+"\n";
-			//var input=document.createElement('input');
-			//input.type='checkbox';
-			//newContent.appendChild(input);
-			//newContent.appendChild(text[key]+"\n");
 			if(note.checkboxData[key]!=false && note.checkboxData[key]!=true){
 				note.checkboxData[key]=false;
 			}
@@ -492,14 +411,8 @@ Notes.prototype.invertCheckBoxStatus=function(){
 		lengthOfStoredData=note.checkboxData.length;
 		console.log(lengthOfData,lengthOfStoredData);
 		Notes.prototype.addCheckboxes.call(note);
-		//Notes.prototype.addEventsToCheckbox.call(note);
-		//newContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
-		//note.content=newContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
-		//console.log(note.content);
 		note.checkboxStatus=true;
-		//document.getElementById(note.id).childNodes[0].innerHTML=note.content;
 		keep.saveNotes();
-		//console.log(note);
 	}
 };
 Notes.prototype.addCheckboxes=function(){
@@ -518,21 +431,8 @@ Notes.prototype.addCheckboxes=function(){
 		div.innerHTML=newContentFalse+"<span>Completed Tasks</span><br>"+newContentTrue;
 	else
 		div.innerHTML=newContentFalse+newContentTrue;
-	// div.addEventListener('click',function(event){
-		//console.log(event.target,note);
-		// if(event.target.parentNode){
-		//if(true){
-			// if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
-				// note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
-				// updateStructure(note);
-				// keep.saveNotes();
-			// }
-		// }
-	// });
 		div.addEventListener('click',updateNoteCheckboxStatus);
-	//console.log(div.innerHTML.split('<br>'));
 };
-
 updateStructure=function(note){
 	console.log('asd');
 	var div=document.getElementById(note.id).childNodes[0];
@@ -550,11 +450,8 @@ updateStructure=function(note){
 		div.innerHTML=newContentFalse+newContentTrue;
 }
 function updateNoteCheckboxStatus(event){
-	//console.log(event.target.parentNode.parentNode.id);
-	//console.log("event");
 	for(var key in keep.notes.data){
 		if(keep.notes.data[key]){
-			//console.log(key,event.target.parentNode);
 			if(keep.notes.data[key].id==event.target.parentNode.parentNode.id){
 				keep.notes.data[key].checkboxData[event.target.id]=(keep.notes.data[key].checkboxData[event.target.id])?false:true;
 				updateStructure(keep.notes.data[key]);
@@ -580,11 +477,8 @@ keep.populateNotes(keep.currentCategory);
 bindReturnHandler('content','newNote');
 bindReturnHandler('category','newCategory');
 keep.updateCatButton();
-//keep.adjustLine();
-
 function newCategory(){
 	var cat=document.getElementById("category").value;
-	//console.log(keep.n);
 	if(cat!=""){
 		for(var key in keep.categories){
 			if(keep.categories[key].toUpperCase()==cat.toUpperCase())
@@ -613,10 +507,8 @@ function bindReturnHandler(inputId,buttonId){
 	element.addEventListener('keydown',function(event){
 		var keyCode=event.keyCode?event.keyCode:event.which;
 		if(keyCode==13){
-			//event.preventDefault();
 			if(event.shiftKey)
 			{
-				//console.log("shift");
 				event.stopPropagation();
 			}
 			else{
@@ -630,20 +522,14 @@ function bindReturnHandler(inputId,buttonId){
 function newNote(){
 	var content=document.getElementById('content').value.trim();
 	content=keep.escapeHtml(content);
-	console.log(content);
 	if(content!=""){
 		var tempNote=new Notes(content);
-		var tempJSONNote=tempNote;
-		//tempJSONNote.content=tempJSONNote.content.replace(/(?:\r\n|\r|\n)/g, '<br>');
-		keep.notes.data.push(tempJSONNote);
+		keep.notes.data.push(tempNote);
 		keep.notes.count++;
 		keep.notes.last++;
-		//keep.noOfNotes++;
-		//keep.adjustLine();
 		keep.saveNotes();
 		if(keep.currentCategory==tempNote.category || keep.currentCategory=='c0')
 			keep.insertNoteInHTML(tempNote);
-		//console.log(keep.notes);
 	}
 	document.getElementById('content').value="";
 }
