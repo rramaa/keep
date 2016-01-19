@@ -95,6 +95,7 @@ input[type='text']:focus,textarea:focus{
 	border: 2px #B3B3B3 inset;
 }
 .note div:nth-child(2) div select{
+	//-webkit-appearance: none; 
 	width:20%;
 	float: left;
 	margin: auto auto auto 2%;

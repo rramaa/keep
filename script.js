@@ -2,16 +2,16 @@
 var colorHash=new Array("Select Color","#e5e5ff","#ffe5f6","#c6ecc6","#ffffb3","#ffcccc","#ebccff","#fff2cc","#ccd9ff");
 var colorName=new Array("Select Color","Lavender","Lavender Blush","Green","Yellow","Cosmos","Blue Chalk","Oasis","Hawkes Blue");
 var Application=function(){
-	this.categories=JSON.parse(localStorage.getItem("categories2"));
+	this.categories=JSON.parse(localStorage.getItem("categories"));
 	if(!this.categories){
-		localStorage.setItem("categories2",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}');
-		this.categories=JSON.parse(localStorage.getItem("categories2"));
+		localStorage.setItem("categories",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}');
+		this.categories=JSON.parse(localStorage.getItem("categories"));
 	}
-	this.notes=JSON.parse(localStorage.getItem("notes2"));
+	this.notes=JSON.parse(localStorage.getItem("notes"));
 	if(!this.notes)
 	{
-		localStorage.setItem("notes2",'{"count":0,"data":[],"last":0}');
-		this.notes=JSON.parse(localStorage.getItem("notes2"));
+		localStorage.setItem("notes",'{"count":0,"data":[],"last":0}');
+		this.notes=JSON.parse(localStorage.getItem("notes"));
 	}
 	this.n=0;
 	this.currentCategory="c0";
@@ -54,6 +54,24 @@ var Application=function(){
 			obj.startEditing(note);
 			//console.log(note);
 		});
+		if( navigator.userAgent.match(/Android/i)
+		 || navigator.userAgent.match(/webOS/i)
+		 || navigator.userAgent.match(/iPhone/i)
+		 || navigator.userAgent.match(/iPad/i)
+		 || navigator.userAgent.match(/iPod/i)
+		 || navigator.userAgent.match(/BlackBerry/i)
+		 || navigator.userAgent.match(/Windows Phone/i)){
+    		var pressTimer;
+			contentDiv.addEventListener('mousedown',function(){
+				pressTimer=window.setTimeout(function(){
+					console.log("mousedown");
+					obj.startEditing(note);
+				},300);
+			});
+			contentDiv.addEventListener('mouseup',function(){
+				window.clearTimeout(pressTimer);
+			});
+  		}
 		div.appendChild(contentDiv);
 
 		
@@ -249,13 +267,13 @@ Application.prototype.populateNotes=function(){
 };
 Application.prototype.saveCategories=function(){
 	var categoriesToSave=JSON.stringify(this.categories);
-	localStorage.setItem("categories2",categoriesToSave);
+	localStorage.setItem("categories",categoriesToSave);
 };
 //needs to be updated
 Application.prototype.saveNotes=function(){
 	var notesToSave=JSON.stringify(this.notes);
 	//console.log(notesToSave);
-	localStorage.setItem("notes2",notesToSave);
+	localStorage.setItem("notes",notesToSave);
 };
 Application.prototype.updateNoCat=function(){
 	var categories=this.categories;
@@ -362,6 +380,24 @@ Notes.prototype.editNote=function(){
 			obj.startEditing(note);
 			//console.log(note);
 		});
+		if( navigator.userAgent.match(/Android/i)
+		 || navigator.userAgent.match(/webOS/i)
+		 || navigator.userAgent.match(/iPhone/i)
+		 || navigator.userAgent.match(/iPad/i)
+		 || navigator.userAgent.match(/iPod/i)
+		 || navigator.userAgent.match(/BlackBerry/i)
+		 || navigator.userAgent.match(/Windows Phone/i)){
+    		var pressTimer;
+			contentDiv.addEventListener('mousedown',function(){
+				pressTimer=window.setTimeout(function(){
+					console.log("mousedown");
+					obj.startEditing(note);
+				},300);
+			});
+			contentDiv.addEventListener('mouseup',function(){
+				window.clearTimeout(pressTimer);
+			});
+  		}
 		value=value.replace(/<br>/g,"\n");
 		div.insertBefore(contentDiv,div.firstChild);
 		for(var key in keep.notes.data){
@@ -444,16 +480,20 @@ Notes.prototype.addCheckboxes=function(){
 		div.innerHTML=newContentFalse+newContentTrue;
 	div.addEventListener('click',function(event){
 		//console.log(event.target,note);
-		if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
-			note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
-			updateStructure(note);
-			keep.saveNotes();
+		//if(event.target.parentNode){
+		if(true){
+			if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
+				note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
+				updateStructure(note);
+				keep.saveNotes();
+			}
 		}
 	});
 	//console.log(div.innerHTML.split('<br>'));
 };
 
 updateStructure=function(note){
+	console.log("event");
 	var div=document.getElementById(note.id).childNodes[0];
 	var content=note.content.split("\n");
 	var newContentTrue="",newContentFalse="";
@@ -468,21 +508,16 @@ updateStructure=function(note){
 	else
 		div.innerHTML=newContentFalse+newContentTrue;
 }
-
+function testing(){
+	console.log("Removed");
+};
 Notes.prototype.removeCheckboxes=function(){
 	var note=this;
 	var div=document.getElementById(note.id).childNodes[0];
 	div.innerHTML=note.content.replace(/(\n)/g,"<br>");
 	console.log(div);
-	//div.removeEventListener('click',testing);
+	div.removeEventListener('click',testing);
 };
-
-Notes.prototype.updateCheckboxStatus=function(e){
-	console.log(e);
-}
-function testing(){
-	console.log("Removed");
-}
 document.getElementById('newCategory').addEventListener('click',newCategory);
 document.getElementById('newNote').addEventListener('click',newNote);
 var keep=new Application();
