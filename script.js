@@ -3,6 +3,14 @@ var Color=function(name,hash){
 	this.name=name;
 	this.hash=hash;
 }
+window.onmousedown=function(){
+	//console.log("afd");
+		var contextMenu=document.getElementById('contextMenu');
+		if(contextMenu){
+			if(event.target.id!='contextMenu')
+			contextMenu.parentNode.removeChild(contextMenu);
+		}	
+};
 var Colors=[];
 //adding colors
 Colors.push(new Color("Select Color",""));
@@ -61,18 +69,19 @@ var Application=function(){
 	this.unescapeHtml=function(text) {
 	  return text.replace(/(&lt;)/g,'<').replace(/(&gt;)/g,'>').replace(/(&amp;)/g,'&').replace(/(&quot;)/g,'\"').replace(/(&#039;)/g,'\'');
 	}
-		var createHTMLNode=function(tag,id,Class,innerContent,bgColor){
-			var element=document.createElement(tag);
-			if(id)
-				element.setAttribute('id',id);
-			if(Class)
-				element.setAttribute('class',Class);
-			if(innerContent)
-				element.innerHTML=innerContent;
-			if(bgColor)
-				element.style.backgroundColor=bgColor;
-			return element;
-		}
+	var createHTMLNode=function(tag,id,Class,innerContent,bgColor){
+		var element=document.createElement(tag);
+		if(id)
+			element.setAttribute('id',id);
+		if(Class)
+			element.setAttribute('class',Class);
+		if(innerContent)
+			element.innerHTML=innerContent;
+		if(bgColor)
+			element.style.backgroundColor=bgColor;
+		return element;
+	}
+
 	this.insertNoteInHTML=function(note){
 		var obj=this;
 		var base=document.getElementById('displayNotes');
@@ -82,6 +91,32 @@ var Application=function(){
 		var contentDiv=createHTMLNode('div',null,null,note.content.replace(/(?:\r\n|\r|\n)/g, '<br>'));
 		contentDiv.addEventListener('dblclick',function(){
 			obj.startEditing(note);
+		});
+		div.addEventListener('contextmenu',function(){
+			//obj.startEditing(note);
+			var contextDiv=createHTMLNode('select','contextMenu');
+			var contextOption=createHTMLNode('option',0,null,"Select");
+			contextDiv.appendChild(contextOption);
+			var contextOption=createHTMLNode('option',1,null,"Delete Note");
+			contextDiv.appendChild(contextOption);
+			var contextOption=createHTMLNode('option',2,null,"Checkboxes");
+			contextDiv.appendChild(contextOption);
+			contextDiv.style.position="fixed";
+			contextDiv.style.marginLeft=window.pageXOffset+event.screenX-10 +'px';
+			contextDiv.style.marginTop=window.pageYOffset+event.screenY-document.getElementById("allNotes").clientHeight-105 +'px';
+			contextDiv.addEventListener('change',function(){
+				if(event.target.selectedIndex==1){
+					console.log("delete");
+					Notes.prototype.deleteNote.call(note);
+				}
+				else if(event.target.selectedIndex==2){
+					console.log("checkbox");
+					Notes.prototype.invertCheckBoxStatus.call(note);
+				}
+				contextMenu.parentNode.removeChild(contextMenu);
+			});
+			document.body.appendChild(contextDiv);
+			event.preventDefault();
 		});
 		if(isMobile){
     		var pressTimer;
@@ -134,7 +169,6 @@ var Application=function(){
 		})(note);
 		colorDiv.appendChild(dropdown);
 		butDiv.appendChild(colorDiv);
-		
 		var catDiv=createHTMLNode('div');
 		var dropdown=createHTMLNode('select','catChange'+note.id,'catChange');
 		var option=createHTMLNode('option',0,null,'Select Categories');
@@ -195,9 +229,10 @@ var Application=function(){
 		var div=document.getElementById(note.id).childNodes[0];
 		div.innerHTML="";
 		var textarea=document.createElement('textarea');
-		textarea.setAttribute('style','font-size:1em;width:95%;height:20px;border:none;margin:8px auto 8px auto;border-bottom:1px #80e5ff solid;background-color:transparent;');
+		textarea.setAttribute('class','editing');
 		textarea.value=keep.unescapeHtml(note.content);
 		div.appendChild(textarea);
+		textarea.style.height=(note.content.split("\n").length)+"em";
 		textarea.focus();
 		textarea.select();
 		div.removeEventListener('click',updateNoteCheckboxStatus);

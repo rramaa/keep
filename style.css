@@ -73,6 +73,7 @@ input[type='text']:focus,textarea:focus{
 	outline-width: 0;
 	border-bottom: 2px blue solid;
 }
+
 #displayCategories div button{
 	height: 15%;
 	width: 80%;
@@ -81,21 +82,31 @@ input[type='text']:focus,textarea:focus{
 .note div:nth-child(1){
 	margin: auto auto 2% 2%;
 }
+
 .note div:nth-child(2) div button{
-	width:20%;
 	float: left;
 	margin: auto auto auto 2%;
-    background-color: orangered;
-    font-weight: bold;
+	font-weight: bold;
+    font-size: 10px;
     cursor: pointer;
     border-radius: 10px;
     height: 18px;
     line-height: 10px;
     border: 2px #B3B3B3 outset;
+    padding: 0px
 }
 .note div:nth-child(2) div button:focus{
 	border: 2px #B3B3B3 inset;
 }
+.note div:nth-child(2) div button#delete{
+	width:16%;
+    background-color: orangered;   
+}
+.note div:nth-child(2) div button#checkbox{
+	width:24%;
+    background-color: #5EC9FD;
+}
+
 .note div:nth-child(2) div select{
 	//-webkit-appearance: none; 
 	width:20%;
@@ -114,4 +125,14 @@ input[type='text']:focus,textarea:focus{
 }
 textarea{
 	resize:none;
+	font-size: 1em;
+}
+.editing{
+	font-size:1em;
+	width:95%;
+	height:20px;
+	border:none;
+	margin:8px auto 8px auto;
+	border-bottom:1px #80e5ff solid;
+	background-color:transparent;
 }
