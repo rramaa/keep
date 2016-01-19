@@ -1,21 +1,48 @@
 //localStorage.setItem("categories",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}')
-var colorHash=new Array("Select Color","#e5e5ff","#ffe5f6","#c6ecc6","#ffffb3","#ffcccc","#ebccff","#fff2cc","#ccd9ff");
-var colorName=new Array("Select Color","Lavender","Lavender Blush","Green","Yellow","Cosmos","Blue Chalk","Oasis","Hawkes Blue");
+var Color=function(name,hash){
+	this.name=name;
+	this.hash=hash;
+}
+var Colors=[];
+//adding colors
+Colors.push(new Color("Select Color",""));
+Colors.push(new Color("Lavender","#e5e5ff"));
+Colors.push(new Color("Lavender Blush","#ffe5f6"));
+Colors.push(new Color("Green","#c6ecc6"));
+Colors.push(new Color("Yellow","#ffffb3"));
+Colors.push(new Color("Cosmos","#ffcccc"));
+Colors.push(new Color("Blue Chalk","#ebccff"));
+Colors.push(new Color("Oasis","#fff2cc"));
+Colors.push(new Color("Hawkes Blue","#ccd9ff"));
+//
 var Application=function(){
 	this.categories=JSON.parse(localStorage.getItem("categories"));
 	if(!this.categories){
-		localStorage.setItem("categories",'{"c0":"All","c1":"Home","c2":"Work","c3":"Personal"}');
-		this.categories=JSON.parse(localStorage.getItem("categories"));
+		var defaultCategories=function(){
+			this.c0="All";
+			this.c1="Home";
+			this.c2="Work";
+			this.c3="Personal";
+		}
+		this.categories=new defaultCategories();
+		localStorage.setItem("categories",JSON.stringify(this.categories));
+		//this.categories=JSON.parse(localStorage.getItem("categories"));
 	}
 	this.notes=JSON.parse(localStorage.getItem("notes"));
 	if(!this.notes)
 	{
-		localStorage.setItem("notes",'{"count":0,"data":[],"last":0}');
-		this.notes=JSON.parse(localStorage.getItem("notes"));
+		var defaultNotes=function(){
+			this.count=0;
+			this.last=0;
+			this.data=[];
+		}
+		this.notes=new defaultNotes();
+		localStorage.setItem("notes",JSON.stringify(this.notes));
+		//this.notes=JSON.parse(localStorage.getItem("notes"));
 	}
-	this.n=0;
+	this.n=0;//number of categories
 	this.currentCategory="c0";
-	this.lineHeight=document.getElementById('line').clientHeight;
+	// this.lineHeight=document.getElementById('line').clientHeight;
 	this.escapeHtml=function(text) {
 	  var map = {
 	    '&': '&amp;',
@@ -27,19 +54,23 @@ var Application=function(){
 
 	  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 	}
-	this.adjustLine=function(){
-		var noteHeight=document.getElementById('allNotes').clientHeight;
-		//console.log(noteHeight,this.lineHeight);
-		if(noteHeight<this.lineHeight)
-		{
-			//console.log("no change");
-			document.getElementById('line').style.height=this.lineHeight;
-		}
-		else{
-			console.log(document.getElementById('line').style.height,noteHeight);
-			document.getElementById('line').style.height=noteHeight+"px";
-		}
+	this.unescapeHtml=function(text) {
+	  return text.replace(/(&lt;)/g,'<').replace(/(&gt;)/g,'>').replace(/(&amp;)/g,'&').replace(/(&quot;)/g,'\"').replace(/(&#039;)/g,'\'');
+	  //return text.replace(/(&lt;,&gt;)/g, function(m) { return map[m]; });
 	}
+	// this.adjustLine=function(){
+	// 	var noteHeight=document.getElementById('allNotes').clientHeight;
+	// 	//console.log(noteHeight,this.lineHeight);
+	// 	if(noteHeight<this.lineHeight)
+	// 	{
+	// 		//console.log("no change");
+	// 		document.getElementById('line').style.height=this.lineHeight;
+	// 	}
+	// 	else{
+	// 		console.log(document.getElementById('line').style.height,noteHeight);
+	// 		document.getElementById('line').style.height=noteHeight+"px";
+	// 	}
+	// }
 	this.insertNoteInHTML=function(note){
 		var obj=this;
 		var base=document.getElementById('displayNotes');
@@ -108,11 +139,11 @@ var Application=function(){
 		var colorDiv=document.createElement('div');
 		var dropdown=document.createElement('select');
 		dropdown.setAttribute('id','colorChange'+note.id);
-		for( var colors in colorHash){
+		for( var key in Colors){
 			var option=document.createElement('option');
-			option.setAttribute('id',colors);
-			option.style.backgroundColor=colorHash[colors];
-			option.innerHTML=colorName[colors];
+			option.setAttribute('id',key);
+			option.style.backgroundColor=Colors[key].hash;
+			option.innerHTML=Colors[key].name;
 			dropdown.appendChild(option);
 		}
 		(function(note){
@@ -150,9 +181,9 @@ var Application=function(){
 		butDiv.appendChild(catDiv);
 		div.appendChild(butDiv);
 
-		div.setAttribute('style',"background-color:"+colorHash[note.color]);
+		div.setAttribute('style',"background-color:"+Colors[note.color].hash);
 		base.appendChild(fragment);
-		this.adjustLine();
+		//this.adjustLine();
 		if(note.checkboxStatus){
 			Notes.prototype.addCheckboxes.call(note);
 		}
@@ -195,23 +226,31 @@ var Application=function(){
 		var div=document.getElementById(note.id).childNodes[0];
 		//console.log(div);
 		//div.childNodes[0].addEventListener('dblclick',function(){});
-		var value=div.innerHTML.replace(/<br ?\/?>/g, "\n");
+		//var value=div.innerHTML.replace(/<br ?\/?>/g, "\n");
+		//value=keep.unescapeHtml(value);
 		//var value=div.innerHTML;
-		console.log(value);
+		//console.log(value);
 		div.innerHTML="";
 		var textarea=document.createElement('textarea');
 		textarea.setAttribute('style','font-size:1em;width:95%;height:20px;border:none;margin:8px auto 8px auto;border-bottom:1px #80e5ff solid;background-color:transparent;');
-		textarea.value=note.content;
+		textarea.value=keep.unescapeHtml(note.content);
 		div.appendChild(textarea);
 		textarea.focus();
 		textarea.select();
+		div.removeEventListener('click',updateNoteCheckboxStatus);
 		textarea.addEventListener('blur',function(){
 			console.log("blur");
 			Notes.prototype.editNote.call(note);
 		});
 		textarea.addEventListener('keydown',function(event){
 			var keyCode=event.keyCode?event.keyCode:event.which;
-			if(keyCode==13){
+			if(keyCode==13 && !(navigator.userAgent.match(/Android/i)
+		 || navigator.userAgent.match(/webOS/i)
+		 || navigator.userAgent.match(/iPhone/i)
+		 || navigator.userAgent.match(/iPad/i)
+		 || navigator.userAgent.match(/iPod/i)
+		 || navigator.userAgent.match(/BlackBerry/i)
+		 || navigator.userAgent.match(/Windows Phone/i))){
 				if(event.shiftKey)
 				{
 					//console.log("shift");
@@ -313,7 +352,7 @@ Notes.prototype.deleteNote=function(){
 			keep.saveNotes();
 		}
 	}
-	keep.adjustLine();
+	//keep.adjustLine();
 	//keep.restructureNotes();
 };
 Notes.prototype.changeColor=function(){
@@ -328,7 +367,7 @@ Notes.prototype.changeColor=function(){
 		{
 			keep.notes.data[key].color=colorCode;
 			var div=document.getElementById(note.id);
-			div.setAttribute('style',"background-color:"+colorHash[colorCode]);
+			div.setAttribute('style',"background-color:"+Colors[colorCode].hash);
 			keep.saveNotes();
 		}
 	}
@@ -361,6 +400,7 @@ Notes.prototype.editNote=function(){
 	var flag=false;
 	var div=document.getElementById(note.id);
 	var value=div.childNodes[0].childNodes[0].value;
+	//value=keep.unescapeHtml(value);
 	if(note.checkboxStatus==true){
 		Notes.prototype.invertCheckBoxStatus.call(note);
 		flag=true;
@@ -478,22 +518,23 @@ Notes.prototype.addCheckboxes=function(){
 		div.innerHTML=newContentFalse+"<span>Completed Tasks</span><br>"+newContentTrue;
 	else
 		div.innerHTML=newContentFalse+newContentTrue;
-	div.addEventListener('click',function(event){
+	// div.addEventListener('click',function(event){
 		//console.log(event.target,note);
-		//if(event.target.parentNode){
-		if(true){
-			if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
-				note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
-				updateStructure(note);
-				keep.saveNotes();
-			}
-		}
-	});
+		// if(event.target.parentNode){
+		//if(true){
+			// if(event.target.parentNode.parentNode.id==note.id && event.target.tagName=="INPUT"){
+				// note.checkboxData[event.target.id]=(note.checkboxData[event.target.id])?false:true;
+				// updateStructure(note);
+				// keep.saveNotes();
+			// }
+		// }
+	// });
+		div.addEventListener('click',updateNoteCheckboxStatus);
 	//console.log(div.innerHTML.split('<br>'));
 };
 
 updateStructure=function(note){
-	console.log("event");
+	console.log('asd');
 	var div=document.getElementById(note.id).childNodes[0];
 	var content=note.content.split("\n");
 	var newContentTrue="",newContentFalse="";
@@ -508,15 +549,28 @@ updateStructure=function(note){
 	else
 		div.innerHTML=newContentFalse+newContentTrue;
 }
-function testing(){
-	console.log("Removed");
+function updateNoteCheckboxStatus(event){
+	//console.log(event.target.parentNode.parentNode.id);
+	//console.log("event");
+	for(var key in keep.notes.data){
+		if(keep.notes.data[key]){
+			//console.log(key,event.target.parentNode);
+			if(keep.notes.data[key].id==event.target.parentNode.parentNode.id){
+				keep.notes.data[key].checkboxData[event.target.id]=(keep.notes.data[key].checkboxData[event.target.id])?false:true;
+				updateStructure(keep.notes.data[key]);
+				keep.saveNotes();
+				break;
+			}
+		}
+	}
 };
 Notes.prototype.removeCheckboxes=function(){
 	var note=this;
 	var div=document.getElementById(note.id).childNodes[0];
 	div.innerHTML=note.content.replace(/(\n)/g,"<br>");
 	console.log(div);
-	div.removeEventListener('click',testing);
+	//here
+	div.removeEventListener('click',updateNoteCheckboxStatus);
 };
 document.getElementById('newCategory').addEventListener('click',newCategory);
 document.getElementById('newNote').addEventListener('click',newNote);
@@ -526,7 +580,7 @@ keep.populateNotes(keep.currentCategory);
 bindReturnHandler('content','newNote');
 bindReturnHandler('category','newCategory');
 keep.updateCatButton();
-keep.adjustLine();
+//keep.adjustLine();
 
 function newCategory(){
 	var cat=document.getElementById("category").value;
