@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+
+  "name": "Keep",
+  "description": "Notes storage",
+  "version": "2.2",
+
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "activeTab"
+  ]
+}

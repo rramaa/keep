@@ -3,14 +3,6 @@ var Color=function(name,hash){
 	this.name=name;
 	this.hash=hash;
 }
-window.onmousedown=function(){
-	//console.log("afd");
-		var contextMenu=document.getElementById('contextMenu');
-		if(contextMenu){
-			if(event.target.id!='contextMenu')
-			contextMenu.parentNode.removeChild(contextMenu);
-		}	
-};
 var Colors=[];
 //adding colors
 Colors.push(new Color("Select Color",""));
@@ -31,6 +23,14 @@ var isMobile=( navigator.userAgent.match(/Android/i)
 		 || navigator.userAgent.match(/BlackBerry/i)
 		 || navigator.userAgent.match(/Windows Phone/i))?true:false;
 //
+// if(!isMobile)window.onmousedown=function(){
+// 	//console.log("afd");
+// 		var contextMenu=document.getElementById('contextMenu');
+// 		if(contextMenu){
+// 			if(event.target.parentNode.id!='contextMenu')
+// 			contextMenu.parentNode.removeChild(contextMenu);
+// 		}	
+// };
 var Application=function(){
 	this.categories=JSON.parse(localStorage.getItem("categories"));
 	if(!this.categories){
@@ -92,32 +92,6 @@ var Application=function(){
 		contentDiv.addEventListener('dblclick',function(){
 			obj.startEditing(note);
 		});
-		div.addEventListener('contextmenu',function(){
-			//obj.startEditing(note);
-			var contextDiv=createHTMLNode('select','contextMenu');
-			var contextOption=createHTMLNode('option',0,null,"Select");
-			contextDiv.appendChild(contextOption);
-			var contextOption=createHTMLNode('option',1,null,"Delete Note");
-			contextDiv.appendChild(contextOption);
-			var contextOption=createHTMLNode('option',2,null,"Checkboxes");
-			contextDiv.appendChild(contextOption);
-			contextDiv.style.position="fixed";
-			contextDiv.style.marginLeft=window.pageXOffset+event.screenX-10 +'px';
-			contextDiv.style.marginTop=window.pageYOffset+event.screenY-document.getElementById("allNotes").clientHeight-105 +'px';
-			contextDiv.addEventListener('change',function(){
-				if(event.target.selectedIndex==1){
-					console.log("delete");
-					Notes.prototype.deleteNote.call(note);
-				}
-				else if(event.target.selectedIndex==2){
-					console.log("checkbox");
-					Notes.prototype.invertCheckBoxStatus.call(note);
-				}
-				contextMenu.parentNode.removeChild(contextMenu);
-			});
-			document.body.appendChild(contextDiv);
-			event.preventDefault();
-		});
 		if(isMobile){
     		var pressTimer;
 			contentDiv.addEventListener('mousedown',function(){
@@ -129,6 +103,44 @@ var Application=function(){
 			contentDiv.addEventListener('mouseup',function(){
 				window.clearTimeout(pressTimer);
 			});
+  		}
+  		else{
+  	// 		div.addEventListener('contextmenu',function(){
+			// //obj.startEditing(note);
+			// 	var contextDiv=createHTMLNode('div','contextMenu');
+			// 	var contextOption=createHTMLNode('div',1,null,"Delete Note","white");
+			// 	contextDiv.appendChild(contextOption);
+			// 	var contextOption=createHTMLNode('div',2,null,"Checkboxes","white");
+			// 	contextDiv.appendChild(contextOption);
+			// 	var contextOption=createHTMLNode('div',3,null,"Edit Note","white");
+			// 	contextDiv.appendChild(contextOption);
+			// 	contextDiv.style.position="fixed";
+			// 	contextDiv.style.marginLeft=window.pageXOffset+event.screenX-10 +'px';
+			// 	contextDiv.style.marginTop=window.pageYOffset+event.screenY-document.getElementById("allNotes").clientHeight-105 +'px';
+			// 	contextDiv.addEventListener('click',function(){
+			// 		if(event.target.id==1){
+			// 			console.log("delete");
+			// 			Notes.prototype.deleteNote.call(note);
+			// 		}
+			// 		else if(event.target.id==2){
+			// 			console.log("checkbox");
+			// 			Notes.prototype.invertCheckBoxStatus.call(note);
+			// 		}
+			// 		else if(event.target.id==3){
+			// 			obj.startEditing(note);
+			// 		}
+			// 		contextMenu.parentNode.removeChild(contextMenu);
+			// 	});
+			// 	document.body.appendChild(contextDiv);
+			// 	event.preventDefault();
+			// 	contextDiv.addEventListener('mouseover',function(){
+			// 		for(var key in event.target.parentNode.childNodes){
+			// 			if(event.target.parentNode.childNodes[key].style)
+			// 			event.target.parentNode.childNodes[key].style.backgroundColor="white";
+			// 		}
+			// 		event.target.style.backgroundColor="lightblue";
+			// 	})
+			// });
   		}
 		div.appendChild(contentDiv);
 

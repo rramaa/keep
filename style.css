@@ -1,4 +1,38 @@
 
+@media (min-width:600px){
+	#categories{
+		width: 20%;
+		float: left;
+	}
+	#allNotes{
+		width :75%;
+		margin-left: 22%;
+		border-left:1px solid; 
+	}
+	#displayCategories div button{
+		width: 80%;
+	}
+	#displayCategories div{
+		display: block;
+	}
+}
+@media (max-width:599px){
+	#categories{
+		width: 100%;
+		float: none;
+	}
+	#allNotes{
+		width :100%;
+		margin-left: 0px;
+		border-top:1px solid; 
+	}
+	#displayCategories div button{
+		width: 100%;
+	}
+	#displayCategories div{
+		display: inline-block;
+	}
+}
 .note{
 	border: 1px black solid;
 	padding: 3px;
@@ -10,18 +44,14 @@
 	border-radius: 5px;
 }
 #categories{
-	width: 20%;
+	
 	//position: absolute;
 	padding: 5px;
-	float: left;
 	//border-right: 1px black solid;
 }
 #allNotes{
 	//position: absolute;
-	width :75%;
-	margin-left: 22%;
 	padding: 5px;
-	border-left:1px solid; 
 }
 #line{
 	position: absolute;
@@ -76,7 +106,6 @@ input[type='text']:focus,textarea:focus{
 
 #displayCategories div button{
 	height: 15%;
-	width: 80%;
 	font-size: 0.80em;
 }
 .note div:nth-child(1){
@@ -135,4 +164,13 @@ textarea{
 	margin:8px auto 8px auto;
 	border-bottom:1px #80e5ff solid;
 	background-color:transparent;
+}
+#contextMenu div{
+	border:1px solid black;
+	cursor: pointer;
+	font-size: 0.75em;
+	padding: 3px;
+}
+#contextMenu div:focus{
+	background-color: blue;
 }
